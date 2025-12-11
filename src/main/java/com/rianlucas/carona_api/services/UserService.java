@@ -11,6 +11,11 @@ import com.rianlucas.carona_api.domain.user.AccountStatus;
 import com.rianlucas.carona_api.domain.user.RegisterDTO;
 import com.rianlucas.carona_api.domain.user.User;
 import com.rianlucas.carona_api.domain.user.UserRole;
+import com.rianlucas.carona_api.infra.exceptions.user.EmailAlreadyExistsException;
+import com.rianlucas.carona_api.infra.exceptions.user.PhoneAlreadyExistsException;
+import com.rianlucas.carona_api.infra.exceptions.user.UserNotFoundException;
+import com.rianlucas.carona_api.infra.exceptions.user.UsernameAlreadyExistsException;
+import com.rianlucas.carona_api.infra.exceptions.validation.InvalidDateFormatException;
 import com.rianlucas.carona_api.repositories.UserRepository;
 
 @Service
@@ -28,13 +33,13 @@ public class UserService {
     public String registerUser(RegisterDTO registerDTO) {
         // valido se o email já existe
         if (userRepository.findByEmail(registerDTO.email()) != null) {
-            throw new RuntimeException("Email esta ja em uso.");
+            throw new EmailAlreadyExistsException(registerDTO.email());
         }
         if (userRepository.findByUsername(registerDTO.username()) != null) {
-            throw new RuntimeException("Username ja cadastrado.");
+            throw new UsernameAlreadyExistsException(registerDTO.username());
         }
         if (userRepository.findByPhone(registerDTO.phone()) != null) {
-            throw new RuntimeException("Phone invalido ou ja cadastrado.");
+            throw new PhoneAlreadyExistsException(registerDTO.phone());
         }
 
         // crio o novo usuário com todos os dados
@@ -50,7 +55,7 @@ public class UserService {
             try {
                 newUser.setBirthDate(Date.valueOf(registerDTO.birthDate()));
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid date format. Use YYYY-MM-DD.");
+                throw new InvalidDateFormatException();
             }
         }
         
@@ -82,7 +87,7 @@ public class UserService {
     public void markEmailAsVerified(String email) {
         User user = (User) userRepository.findByEmail(email);
         if (user == null) {
-            throw new RuntimeException("Usuário não encontrado.");
+            throw new UserNotFoundException(email);
         }
         user.setEmailVerified(true);
         userRepository.save(user);

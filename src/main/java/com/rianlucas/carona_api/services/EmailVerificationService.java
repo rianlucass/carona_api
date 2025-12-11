@@ -8,6 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.rianlucas.carona_api.infra.exceptions.verification.InvalidVerificationCodeException;
+import com.rianlucas.carona_api.infra.exceptions.verification.VerificationCodeExpiredException;
+
 @Service
 public class EmailVerificationService {
     // Armazena códigos temporários: email -> {código, expiração}
@@ -32,28 +35,26 @@ public class EmailVerificationService {
     }
     
     // Verificar código
-    public boolean verifyCode(String email, String code) {
+    public void verifyCode(String email, String code) {
         VerificationData data = verificationStorage.get(email);
         
         if (data == null) {
-            return false; // Nenhum código solicitado para este email
+            throw new InvalidVerificationCodeException();
         }
         
         // Verificar se expirou
         if (LocalDateTime.now().isAfter(data.getExpirationTime())) {
-            verificationStorage.remove(email); // Limpa código expirado
-            return false;
+            verificationStorage.remove(email);
+            throw new VerificationCodeExpiredException();
         }
         
         // Verificar se o código está correto
-        boolean isValid = data.getCode().equals(code);
-        
-        if (isValid) {
-            // Remove o código após verificação bem-sucedida
-            verificationStorage.remove(email);
+        if (!data.getCode().equals(code)) {
+            throw new InvalidVerificationCodeException();
         }
         
-        return isValid;
+        // Remove o código após verificação bem-sucedida
+        verificationStorage.remove(email);
     }
     
     // Gerar código de 6 dígitos

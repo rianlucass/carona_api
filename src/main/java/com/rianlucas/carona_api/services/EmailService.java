@@ -4,6 +4,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.rianlucas.carona_api.infra.exceptions.verification.EmailSendingException;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -29,7 +31,7 @@ public class EmailService {
             System.out.println("Email enviado para: " + toEmail);
         } catch (Exception e) {
             System.err.println("Erro ao enviar email: " + e.getMessage());
-            throw new RuntimeException("Erro ao enviar email de verificação");
+            throw new EmailSendingException(e);
         }
     }
 

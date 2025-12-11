@@ -34,48 +34,36 @@ public class AuthenticationController {
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Validated AuthenticationDTO authDTO) {
-        try {
-            var usernamePassword = new UsernamePasswordAuthenticationToken(authDTO.email(), authDTO.password());
-            var auth = this.authenticationManager.authenticate(usernamePassword);
-            
-            User user = (User) auth.getPrincipal();
-            
-            // Verifica se o email foi verificado
-            if (!user.isEmailVerified()) {
-                return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(new ApiResponse<>(false, "Email não verificado. Verifique seu email antes de fazer login."));
-            }
-
-            var token = tokenService.generateToken(user);
-
-            return ResponseEntity.ok(new ApiResponse<>(true, "Login realizado com sucesso", new LoginResponseDTO(token)));
-        } catch (Exception e) {
+        var usernamePassword = new UsernamePasswordAuthenticationToken(authDTO.email(), authDTO.password());
+        var auth = this.authenticationManager.authenticate(usernamePassword);
+        
+        User user = (User) auth.getPrincipal();
+        
+        // Verifica se o email foi verificado
+        if (!user.isEmailVerified()) {
             return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiResponse<>(false, "Email ou senha inválidos"));
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ApiResponse<>(false, "Email não verificado. Verifique seu email antes de fazer login."));
         }
+
+        var token = tokenService.generateToken(user);
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Login realizado com sucesso", new LoginResponseDTO(token)));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Validated RegisterDTO registerDTO) {
-        try {
-            String message = userService.registerUser(registerDTO);
-            
-            RegisterResponseDTO response = new RegisterResponseDTO(
-                message,
-                registerDTO.email(),
-                true // emailVerificationRequired
-            );
-            
-            return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(true, "Cadastro realizado com sucesso", response));
-        } catch (RuntimeException e) {
-            return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse<>(false, e.getMessage()));
-        }
+        String message = userService.registerUser(registerDTO);
+        
+        RegisterResponseDTO response = new RegisterResponseDTO(
+            message,
+            registerDTO.email(),
+            true // emailVerificationRequired
+        );
+        
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(new ApiResponse<>(true, "Cadastro realizado com sucesso", response));
     }
     
     

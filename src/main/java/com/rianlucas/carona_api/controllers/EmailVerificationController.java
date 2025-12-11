@@ -28,70 +28,38 @@ public class EmailVerificationController {
     // 1. Solicitar código de verificação
     @PostMapping("/request-code")
     public ResponseEntity<?> requestVerificationCode(@Valid @RequestBody EmailCodeRequest request) {
-        
-        try {
-            verificationService.requestVerificationCode(request.getEmail());
-            return ResponseEntity.ok("Código enviado para o email");
-            
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body("Erro ao enviar código: " + e.getMessage());
-        }
+        verificationService.requestVerificationCode(request.getEmail());
+        return ResponseEntity.ok(new ApiResponse<>(true, "Código enviado para o email"));
     }
     
     // 2. Verificar código
     @PostMapping("/verify")
     public ResponseEntity<?> verifyEmail(@Valid @RequestBody EmailVerificationRequest request) {
+        verificationService.verifyCode(request.getEmail(), request.getCode());
         
-        try {
-            boolean isValid = verificationService.verifyCode(
-                request.getEmail(), 
-                request.getCode()
-            );
-            
-            if (isValid) {
-                // Marca o email como verificado no banco de dados
-                userService.markEmailAsVerified(request.getEmail());
-                
-                EmailVerificationResponseDTO response = new EmailVerificationResponseDTO(
-                    true,
-                    "Email verificado com sucesso! Você já pode fazer login.",
-                    request.getEmail()
-                );
-                
-                return ResponseEntity.ok(new ApiResponse<>(true, "Email verificado", response));
-            } else {
-                return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(false, "Código inválido ou expirado"));
-            }
-            
-        } catch (Exception e) {
-            return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse<>(false, "Erro na verificação: " + e.getMessage()));
-        }
+        // Marca o email como verificado no banco de dados
+        userService.markEmailAsVerified(request.getEmail());
+        
+        EmailVerificationResponseDTO response = new EmailVerificationResponseDTO(
+            true,
+            "Email verificado com sucesso! Você já pode fazer login.",
+            request.getEmail()
+        );
+        
+        return ResponseEntity.ok(new ApiResponse<>(true, "Email verificado", response));
     }
     
     // 3. Reenviar código (opcional)
     @PostMapping("/resend-code")
     public ResponseEntity<?> resendVerificationCode(@Valid @RequestBody EmailCodeRequest request) {
-        
-        try {
-            // Verifica se o usuário existe
-            if (!userService.emailExists(request.getEmail())) {
-                return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(false, "Email não encontrado"));
-            }
-            
-            verificationService.requestVerificationCode(request.getEmail());
-            return ResponseEntity.ok(new ApiResponse<>(true, "Novo código enviado para o email"));
-            
-        } catch (Exception e) {
+        // Verifica se o usuário existe
+        if (!userService.emailExists(request.getEmail())) {
             return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse<>(false, "Erro ao reenviar código: " + e.getMessage()));
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(false, "Email não encontrado"));
         }
+        
+        verificationService.requestVerificationCode(request.getEmail());
+        return ResponseEntity.ok(new ApiResponse<>(true, "Novo código enviado para o email"));
     }
 }
