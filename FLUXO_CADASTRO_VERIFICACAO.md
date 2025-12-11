@@ -21,8 +21,7 @@ Este documento descreve o fluxo completo de cadastro e verificação de email pa
   "username": "joaosilva",
   "phone": "11999999999",
   "birthDate": "1990-01-15",
-  "gender": "M",
-  "isDriver": true
+  "gender": "M"
 }
 ```
 

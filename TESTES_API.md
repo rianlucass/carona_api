@@ -14,7 +14,6 @@ curl -X POST http://localhost:8080/auth/register \
     "phone": "11999999999",
     "birthDate": "1990-01-15",
     "gender": "M",
-    "isDriver": true
   }'
 ```
 
@@ -102,7 +101,6 @@ curl -X POST http://localhost:8080/auth/register \
     "phone": "11988888888",
     "birthDate": "1995-05-20",
     "gender": "F",
-    "isDriver": false
   }'
 ```
 
@@ -152,7 +150,7 @@ Importe esta collection:
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"teste@email.com\",\n  \"password\": \"senha12345\",\n  \"name\": \"João da Silva\",\n  \"username\": \"joaosilva\",\n  \"phone\": \"11999999999\",\n  \"birthDate\": \"1990-01-15\",\n  \"gender\": \"M\",\n  \"isDriver\": true\n}"
+          "raw": "{\n  \"email\": \"teste@email.com\",\n  \"password\": \"senha12345\",\n  \"name\": \"João da Silva\",\n  \"username\": \"joaosilva\",\n  \"phone\": \"11999999999\",\n  \"birthDate\": \"1990-01-15\",\n  \"gender\": \"M\"}"
         }
       }
     },

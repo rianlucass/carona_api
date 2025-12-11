@@ -30,7 +30,6 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/home").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email-verification/request-code").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email-verification/verify").permitAll()
                         .anyRequest().authenticated()

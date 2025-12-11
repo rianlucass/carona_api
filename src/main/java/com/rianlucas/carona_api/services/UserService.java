@@ -55,9 +55,9 @@ public class UserService {
         }
         
         newUser.setGender(registerDTO.gender());
-        newUser.setDriver(registerDTO.isDriver());
-        
+
         // defino valores padrões se não fornecidos
+        newUser.setDriver(false);
         newUser.setAccountStatus(AccountStatus.ACTIVE);
         newUser.setRole(UserRole.USER);
         newUser.setCreatedAt(LocalDateTime.now());

@@ -34,7 +34,6 @@ public record RegisterDTO(
         @NotBlank(message = "Gender is mandatory")
         @Pattern(regexp = "^[MFO]$", message = "Gender must be M (Male), F (Female), or O (Other)")
         String gender,
-        boolean isDriver,
         AccountStatus accountStatus
 ) {
     
