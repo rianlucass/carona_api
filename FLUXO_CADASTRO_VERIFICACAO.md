@@ -1,31 +1,31 @@
-# 📱 Fluxo de Cadastro e Verificação de Email - Via Carona API
+# 📱 Fluxo de Cadastro - Via Carona API
 
 ## 🎯 Visão Geral
 
-Este documento descreve o fluxo completo de cadastro e verificação de email para integração com front-end (React, Angular, React Native, etc.).
+Cadastro em 3 etapas: **Registro inicial** → **Verificação de email** → **Completar perfil**
 
 ---
 
-## 🔄 Fluxo Completo
+## 🔄 Fluxo de Cadastro
 
-### **1️⃣ CADASTRO (Tela de Registro)**
+### **1️⃣ REGISTRO INICIAL**
 
-**Endpoint:** `POST /auth/register`
+`POST /auth/register`
 
-**Request Body:**
+**Request:**
 ```json
 {
   "email": "usuario@email.com",
   "password": "senha12345",
-  "name": "João Silva",
-  "username": "joaosilva",
+  "name": "Rian Lucas",
+  "username": "rianlucas",
   "phone": "11999999999",
   "birthDate": "1990-01-15",
   "gender": "M"
 }
 ```
 
-**Response (201 Created):**
+**Success (201):**
 ```json
 {
   "success": true,
@@ -38,97 +38,93 @@ Este documento descreve o fluxo completo de cadastro e verificação de email pa
 }
 ```
 
-**Response (400 Bad Request) - Email já cadastrado:**
-```json
-{
-  "success": false,
-  "message": "Email esta ja em uso.",
-  "data": null
-}
-```
+**Errors:**
+- `409` - Email/Username/Phone já em uso (`USER_001`, `USER_002`, `USER_003`)
+- `400` - Validação de campos (`VALIDATION_ERROR`)
 
-**Ação do Front-end:**
-- ✅ Mostrar mensagem de sucesso
-- ✅ Informar que código foi enviado para o email
-- ✅ **Redirecionar para tela de verificação**
-- ✅ Passar o email para a próxima tela
+**Ação:** Redirecionar para `/verify-email` passando o email
 
 ---
 
-### **2️⃣ VERIFICAÇÃO DE EMAIL (Tela de Código)**
+### **2️⃣ VERIFICAÇÃO DE EMAIL**
 
-**Endpoint:** `POST /api/email-verification/verify`
+`POST /api/email-verification/verify`
 
-**Request Body:**
+**Request:**
 ```json
 {
   "email": "usuario@email.com",
-  "code": "123456"
+  "code": "12345678"
 }
 ```
 
-**Response (200 OK) - Código válido:**
+**Success (200):**
 ```json
 {
   "success": true,
   "message": "Email verificado",
   "data": {
     "success": true,
-    "message": "Email verificado com sucesso! Você já pode fazer login.",
+    "message": "Email verificado com sucesso!",
     "email": "usuario@email.com"
   }
 }
 ```
 
-**Response (400 Bad Request) - Código inválido:**
-```json
-{
-  "success": false,
-  "message": "Código inválido ou expirado",
-  "data": null
-}
-```
+**Errors:**
+- `400` - Código inválido ou expirado (`VERIFICATION_001`, `VERIFICATION_002`)
 
-**Ação do Front-end:**
-- ✅ Mostrar campo para inserir código de 6 dígitos
-- ✅ Exibir timer (10 minutos)
-- ✅ Se sucesso: **Redirecionar para tela de login**
-- ✅ Se erro: Mostrar mensagem e opção de reenviar
+**Ação:** Redirecionar para `/complete-profile` passando o email
 
----
+#### **Reenviar Código (Opcional)**
 
-### **3️⃣ REENVIAR CÓDIGO (Opcional)**
+`POST /api/email-verification/resend-code`
 
-**Endpoint:** `POST /api/email-verification/resend-code`
-
-**Request Body:**
 ```json
 {
   "email": "usuario@email.com"
 }
 ```
 
-**Response (200 OK):**
+---
+
+### **3️⃣ COMPLETAR PERFIL**
+
+`POST /auth/registerComplete/{email}`
+
+**Content-Type:** `multipart/form-data`
+
+**Form Data:**
+- `photo` (file, opcional) - Foto de perfil (JPG/PNG, máx 5MB)
+- `cpf` (text, obrigatório) - CPF com 11 dígitos
+- `state` (text, obrigatório) - UF com 2 letras (ex: "SP")
+- `city` (text, obrigatório) - Nome da cidade
+
+**Success (200):** 
 ```json
 {
   "success": true,
-  "message": "Novo código enviado para o email",
-  "data": null
+  "message": "Cadastro completo com sucesso",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
 }
 ```
 
-**Ação do Front-end:**
-- ✅ Botão "Reenviar código"
-- ✅ Resetar timer
-- ✅ Mostrar feedback visual
+**Errors:**
+- `403` - Email não verificado (`AUTH_001`)
+- `409` - CPF já em uso (`USER_004`)
+- `400` - Validação de campos (`VALIDATION_ERROR`)
+
+**Ação:** Salvar token e redirecionar para `/dashboard`
 
 ---
 
-### **4️⃣ LOGIN (Tela de Login)**
+### **4️⃣ LOGIN (Alternativo)**
 
-**Endpoint:** `POST /auth/login`
+`POST /auth/login`
 
-**Request Body:**
+**Request:**
 ```json
 {
   "email": "usuario@email.com",
@@ -136,7 +132,7 @@ Este documento descreve o fluxo completo de cadastro e verificação de email pa
 }
 ```
 
-**Response (200 OK) - Email verificado:**
+**Success (200):**
 ```json
 {
   "success": true,
@@ -147,222 +143,52 @@ Este documento descreve o fluxo completo de cadastro e verificação de email pa
 }
 ```
 
-**Response (403 Forbidden) - Email não verificado:**
-```json
-{
-  "success": false,
-  "message": "Email não verificado. Verifique seu email antes de fazer login.",
-  "data": null
-}
-```
-
-**Response (401 Unauthorized) - Credenciais inválidas:**
-```json
-{
-  "success": false,
-  "message": "Email ou senha inválidos",
-  "data": null
-}
-```
-
-**Ação do Front-end:**
-- ✅ Se 200: Salvar token (localStorage/AsyncStorage)
-- ✅ Se 403: Redirecionar para tela de verificação
-- ✅ Se 401: Mostrar erro de credenciais
+**Errors:**
+- `403` - Email não verificado (`AUTH_001`)
+- `401` - Credenciais inválidas (`AUTH_002`)
 
 ---
 
-## 🎨 Exemplo de Implementação Front-end (React)
+## 📊 Diagrama Simplificado
 
-### **Tela de Cadastro:**
-```javascript
-async function handleRegister(formData) {
-  try {
-    const response = await fetch('http://localhost:8080/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      // Redireciona para tela de verificação
-      navigate('/verify-email', { 
-        state: { email: formData.email } 
-      });
-      
-      toast.success('Código enviado para seu email!');
-    } else {
-      toast.error(result.message);
-    }
-  } catch (error) {
-    toast.error('Erro ao cadastrar');
-  }
-}
 ```
-
-### **Tela de Verificação:**
-```javascript
-async function handleVerify(code) {
-  const { email } = location.state; // Email da tela anterior
-  
-  try {
-    const response = await fetch('http://localhost:8080/api/email-verification/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      toast.success('Email verificado!');
-      navigate('/login');
-    } else {
-      toast.error(result.message);
-    }
-  } catch (error) {
-    toast.error('Erro na verificação');
-  }
-}
-
-async function handleResendCode() {
-  const { email } = location.state;
-  
-  try {
-    const response = await fetch('http://localhost:8080/api/email-verification/resend-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      toast.success('Novo código enviado!');
-      resetTimer();
-    }
-  } catch (error) {
-    toast.error('Erro ao reenviar');
-  }
-}
-```
-
-### **Tela de Login:**
-```javascript
-async function handleLogin(email, password) {
-  try {
-    const response = await fetch('http://localhost:8080/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      // Salva token
-      localStorage.setItem('token', result.data.token);
-      
-      toast.success('Login realizado!');
-      navigate('/dashboard');
-    } else if (response.status === 403) {
-      // Email não verificado
-      toast.warning('Verifique seu email primeiro');
-      navigate('/verify-email', { state: { email } });
-    } else {
-      toast.error(result.message);
-    }
-  } catch (error) {
-    toast.error('Erro ao fazer login');
-  }
-}
+[1. REGISTRO]
+    ↓ (Envia código por email)
+[2. VERIFICAÇÃO EMAIL]
+    ↓ (Marca email como verificado)
+[3. COMPLETAR PERFIL]
+    ↓ (Retorna token)
+[DASHBOARD]
 ```
 
 ---
 
-## 📊 Diagrama de Fluxo
+## 🔍 Códigos de Erro
 
-```
-[REGISTRO]
-    ↓
-Envia dados → API valida → Cria usuário → Envia código
-    ↓
-[TELA DE VERIFICAÇÃO]
-    ↓
-Insere código → API valida código → Marca email como verificado
-    ↓
-[TELA DE LOGIN]
-    ↓
-Credenciais → API verifica email? → SIM → Retorna token → [DASHBOARD]
-                                  → NÃO → Volta para verificação
-```
-
----
-
-## ✅ Checklist de Implementação Front-end
-
-### Telas necessárias:
-- [ ] Tela de Cadastro
-- [ ] Tela de Verificação de Email (com campo de 6 dígitos)
-- [ ] Tela de Login
-- [ ] Tela de Dashboard/Home (autenticada)
-
-### Funcionalidades:
-- [ ] Validação de formulários
-- [ ] Feedback visual (loading, toasts)
-- [ ] Timer de 10 minutos na verificação
-- [ ] Botão de reenviar código
-- [ ] Salvamento de token
-- [ ] Proteção de rotas autenticadas
-- [ ] Tratamento de erros HTTP
-
-### Headers para requisições autenticadas:
-```javascript
-headers: {
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${token}`
-}
-```
+| Código | Descrição |
+|--------|-----------|
+| **AUTH_001** | Email não verificado |
+| **AUTH_002** | Credenciais inválidas |
+| **AUTH_003** | Erro ao gerar token |
+| **AUTH_004** | Token inválido/expirado |
+| **USER_001** | Email já em uso |
+| **USER_002** | Username já em uso |
+| **USER_003** | Telefone já em uso |
+| **USER_004** | CPF já em uso |
+| **VALIDATION_001** | Formato de data inválido |
+| **VALIDATION_ERROR** | Erro de validação nos campos |
+| **VERIFICATION_001** | Código inválido |
+| **VERIFICATION_002** | Código expirado |
+| **VERIFICATION_003** | Erro ao enviar email |
 
 ---
 
-## 🔐 Segurança
+## 🔐 Recursos de Segurança
 
-- ✅ Código expira em 10 minutos
-- ✅ Login bloqueado sem verificação
+- ✅ Código de verificação expira em 10 minutos
+- ✅ Email deve ser verificado antes de completar perfil
 - ✅ Senha criptografada (BCrypt)
-- ✅ Token JWT com expiração
-- ✅ CORS configurado
-- ✅ Validações no DTO
-
----
-
-## 🎯 Endpoints Públicos (não requerem autenticação)
-
-- `POST /auth/register`
-- `POST /auth/login`
-- `POST /api/email-verification/request-code`
-- `POST /api/email-verification/verify`
-- `POST /api/email-verification/resend-code`
-
----
-
-## 📝 Notas Importantes
-
-1. **Código é enviado automaticamente** no registro
-2. **Login bloqueado** até email ser verificado
-3. **Código expira** em 10 minutos
-4. **Pode reenviar** código quantas vezes necessário
-5. **Respostas padronizadas** com estrutura `ApiResponse`
-
----
-
-## 🚀 Próximos Passos
-
-- [ ] Implementar recuperação de senha
-- [ ] Adicionar rate limiting
-- [ ] Logs de auditoria
-- [ ] Notificações push
-- [ ] Login social (Google, Facebook)
+- ✅ Token JWT com expiração (2 horas)
+- ✅ Validação de CPF único
+- ✅ Upload de imagem com validação de tipo e tamanho (5MB)
+- ✅ Exception Handler global

@@ -21,7 +21,7 @@ public class EmailService {
         message.setText(
                 "Olá!\n\n" +
                         "Seu código de verificação é: " + verificationCode + "\n\n" +
-                        "Este código expira em 10 minutos.\n\n" +
+                        "Este código expira em 1 minutos.\n\n" +
                         "Se você não solicitou este código, ignore este email.\n\n" +
                         "Atenciosamente,\n" +
                         "Equipe Via Carona ;)");

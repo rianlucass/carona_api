@@ -3,6 +3,7 @@ package com.rianlucas.carona_api.infra.exceptions.handler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -58,14 +59,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentials(
-            BadCredentialsException ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse("Email ou senha inválidos.", "AUTH_002", request.getDescription(false).replace("uri=", ""));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ErrorResponse> handleDisabledAccount(
+            DisabledException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-            "Email ou senha inválidos.", 
-            "AUTH_002", 
+            "Conta desabilitada. Por favor, verifique seu email.", 
+            "AUTH_001", 
             request.getDescription(false).replace("uri=", "")
         );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(TokenGenerationException.class)

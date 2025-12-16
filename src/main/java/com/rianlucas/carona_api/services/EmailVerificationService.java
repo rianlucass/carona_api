@@ -24,8 +24,8 @@ public class EmailVerificationService {
         // 1. Gerar código de 6 dígitos
         String code = generateSixDigitCode();
         
-        // 2. Definir expiração (10 minutos)
-        LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(10);
+        // 2. Definir expiração (1 minutos)
+        LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(1);
         
         // 3. Armazenar
         verificationStorage.put(email, new VerificationData(code, expirationTime));
