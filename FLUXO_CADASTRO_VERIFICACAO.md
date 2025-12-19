@@ -18,10 +18,7 @@ Cadastro em 3 etapas: **Registro inicial** → **Verificação de email** → **
   "email": "usuario@email.com",
   "password": "senha12345",
   "name": "Rian Lucas",
-  "username": "rianlucas",
-  "phone": "11999999999",
-  "birthDate": "1990-01-15",
-  "gender": "M"
+  "username": "rianlucas"
 }
 ```
 
@@ -96,9 +93,12 @@ Cadastro em 3 etapas: **Registro inicial** → **Verificação de email** → **
 
 **Form Data:**
 - `photo` (file, opcional) - Foto de perfil (JPG/PNG, máx 5MB)
-- `cpf` (text, obrigatório) - CPF com 11 dígitos
-- `state` (text, obrigatório) - UF com 2 letras (ex: "SP")
-- `city` (text, obrigatório) - Nome da cidade
+- `phone` (text, obrigatório) - Telefone com 10 ou 11 dígitos (ex: "11987654321")
+- `birthDate` (text, obrigatório) - Data de nascimento no formato YYYY-MM-DD (ex: "2000-01-15")
+- `gender` (text, obrigatório) - Gênero: M (Masculino), F (Feminino) ou O (Outro)
+- `cpf` (text, obrigatório) - CPF com 11 dígitos (ex: "12345678901")
+- `state` (text, obrigatório) - UF com 2 letras maiúsculas (ex: "SP")
+- `city` (text, obrigatório) - Nome da cidade (2-100 caracteres)
 
 **Success (200):** 
 ```json
@@ -113,8 +113,8 @@ Cadastro em 3 etapas: **Registro inicial** → **Verificação de email** → **
 
 **Errors:**
 - `403` - Email não verificado (`AUTH_001`)
-- `409` - CPF já em uso (`USER_004`)
-- `400` - Validação de campos (`VALIDATION_ERROR`)
+- `409` - CPF/Telefone já em uso (`USER_004`, `USER_003`)
+- `400` - Validação de campos (`VALIDATION_ERROR`, `VALIDATION_001`)
 
 **Ação:** Salvar token e redirecionar para `/dashboard`
 
@@ -185,7 +185,7 @@ Cadastro em 3 etapas: **Registro inicial** → **Verificação de email** → **
 
 ## 🔐 Recursos de Segurança
 
-- ✅ Código de verificação expira em 10 minutos
+- ✅ Código de verificação expira em 1 minutos
 - ✅ Email deve ser verificado antes de completar perfil
 - ✅ Senha criptografada (BCrypt)
 - ✅ Token JWT com expiração (2 horas)

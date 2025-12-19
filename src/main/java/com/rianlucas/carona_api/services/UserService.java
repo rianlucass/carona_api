@@ -56,9 +56,6 @@ public class UserService {
         if (userRepository.findByUsername(registerDTO.username()) != null) {
             throw new UsernameAlreadyExistsException(registerDTO.username());
         }
-        if (userRepository.findByPhone(registerDTO.phone()) != null) {
-            throw new PhoneAlreadyExistsException(registerDTO.phone());
-        }
 
         // crio o novo usuário com todos os dados
         User newUser = new User();
@@ -66,18 +63,7 @@ public class UserService {
         newUser.setPassword(passwordEncoder.encode(registerDTO.password()));
         newUser.setName(registerDTO.name());
         newUser.setUsername(registerDTO.username());
-        newUser.setPhone(registerDTO.phone());
         
-        // converto String para Date com validação
-        if (registerDTO.birthDate() != null && !registerDTO.birthDate().isEmpty()) {
-            try {
-                newUser.setBirthDate(Date.valueOf(registerDTO.birthDate()));
-            } catch (IllegalArgumentException e) {
-                throw new InvalidDateFormatException();
-            }
-        }
-        
-        newUser.setGender(registerDTO.gender());
 
         // defino valores padrões se não fornecidos
         newUser.setDriver(false);
@@ -94,8 +80,8 @@ public class UserService {
             System.err.println("Erro ao enviar código de verificação: " + e.getMessage());
         }
 
-        String token = tokenService.generateToken(newUser);
-        return token;
+        return tokenService.generateToken(newUser);
+
     }
 
     //registrar o restante das variaveis do usuário depois que o email for verificado
@@ -106,11 +92,19 @@ public class UserService {
             throw new UserNotFoundException(email);
         }
 
-        if (user.getEmailVerified() == null || !user.getEmailVerified()) {
+        if (user.getEmailVerified() == false) {
             throw new EmailNotVerifiedException(email);
         }
+
+        // Verifica se o telefone já está em uso por outro usuário
+        if (completedDTO.phone() != null && !completedDTO.phone().isEmpty()) {
+            User existingUserWithPhone = (User) userRepository.findByPhone(completedDTO.phone());
+            if (existingUserWithPhone != null && !existingUserWithPhone.getId().equals(user.getId())) {
+                throw new PhoneAlreadyExistsException(completedDTO.phone());
+            }
+        }
         
-        // Verifica se o CPF já está em uso por outro usuário( trocar por uma validação real no futuro com api externa)
+        // Verifica se o CPF já está em uso por outro usuário (trocar por uma validação real no futuro com api externa)
         if (completedDTO.cpf() != null && !completedDTO.cpf().isEmpty()) {
             User existingUserWithCpf = (User) userRepository.findByCpf(completedDTO.cpf());
             if (existingUserWithCpf != null && !existingUserWithCpf.getId().equals(user.getId())) {
@@ -118,7 +112,22 @@ public class UserService {
             }
         }
 
-        user.setPhotoUrl(fileStorageService.uploadPhoto(completedDTO.photo()));
+        // Converte String para Date com validação
+        if (completedDTO.birthDate() != null && !completedDTO.birthDate().isEmpty()) {
+            try {
+                user.setBirthDate(Date.valueOf(completedDTO.birthDate()));
+            } catch (IllegalArgumentException e) {
+                throw new InvalidDateFormatException();
+            }
+        }
+
+        // Upload da foto (apenas se fornecida)
+        if (completedDTO.photo() != null && !completedDTO.photo().isEmpty()) {
+            user.setPhotoUrl(fileStorageService.uploadPhoto(completedDTO.photo()));
+        }
+
+        user.setPhone(completedDTO.phone());
+        user.setGender(completedDTO.gender());
         user.setCpf(completedDTO.cpf());
         user.setCity(completedDTO.city());
         user.setState(completedDTO.state());
@@ -147,13 +156,38 @@ public class UserService {
         Authentication auth = authenticationManager.authenticate(usernamePassword);
         
         User user = (User) auth.getPrincipal();
-        
-        // Verifica se o email foi verificado
-        if (user.getEmailVerified() == null || !user.getEmailVerified()) {
+
+        if (user == null) {
+            throw new UserNotFoundException(email);
+        }
+        // verifica se o email foi verificado - se não, levar para verificação
+        if (user.getEmailVerified() == false) {
             throw new EmailNotVerifiedException(email);
         }
         
-        // Gera e retorna o token
         return tokenService.generateToken(user);
+    }
+
+    public String forgotMyPassword(String email) {
+        // Verifica se o usuário existe
+        User user = (User) userRepository.findByEmail(email);
+        if (user == null) {
+            throw new UserNotFoundException(email);
+        }
+        // Lógica para resetar a senha (enviar email com link ou código de verificação)
+        return "Funcionalidade de resetar senha ainda não implementada.";
+    }
+
+    public String changeMyPassword(String email, String newPassword) {
+        // Verifica se o usuário existe
+        User user = (User) userRepository.findByEmail(email);
+        if (user == null) {
+            throw new UserNotFoundException(email);
+        }
+        // Atualiza a senha do usuário
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+        return "Senha alterada com sucesso.";
     }
 }

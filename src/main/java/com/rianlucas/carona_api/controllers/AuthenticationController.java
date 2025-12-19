@@ -44,7 +44,7 @@ public class AuthenticationController {
         
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(new ApiResponse<>(true, "Cadastro realizado com sucesso", new LoginResponseDTO(token)));
+            .body(new ApiResponse<>(true, "Email cadastrado com sucesso: " + token, response));
     }
 
     @PostMapping(value = "/registerComplete/{email}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

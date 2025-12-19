@@ -8,6 +8,18 @@ import jakarta.validation.constraints.Size;
 
 public record RegisterCompletedDTO(
     MultipartFile photo, // Foto é opcional
+
+    @NotBlank(message = "Phone is mandatory")
+    @Pattern(regexp = "^\\d{10,11}$", message = "Phone must be 10 or 11 digits")
+    String phone,
+
+    @NotBlank(message = "Birth date is mandatory")
+    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Birth date must be in format YYYY-MM-DD")
+    String birthDate,
+
+    @NotBlank(message = "Gender is mandatory")
+    @Pattern(regexp = "^[MFO]$", message = "Gender must be M (Male), F (Female), or O (Other)")
+    String gender,    
     
     @NotBlank(message = "CPF is mandatory")
     @Pattern(regexp = "^\\d{11}$", message = "CPF must be 11 digits")
