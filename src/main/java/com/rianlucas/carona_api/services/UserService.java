@@ -19,6 +19,7 @@ import com.rianlucas.carona_api.infra.exceptions.auth.EmailNotVerifiedException;
 import com.rianlucas.carona_api.infra.exceptions.user.CpfAlreadyExistsException;
 import com.rianlucas.carona_api.infra.exceptions.user.EmailAlreadyExistsException;
 import com.rianlucas.carona_api.infra.exceptions.user.PhoneAlreadyExistsException;
+import com.rianlucas.carona_api.infra.exceptions.user.ProfileIncompleteException;
 import com.rianlucas.carona_api.infra.exceptions.user.UserNotFoundException;
 import com.rianlucas.carona_api.infra.exceptions.user.UsernameAlreadyExistsException;
 import com.rianlucas.carona_api.infra.exceptions.validation.InvalidDateFormatException;
@@ -160,9 +161,17 @@ public class UserService {
         if (user == null) {
             throw new UserNotFoundException(email);
         }
+
         // verifica se o email foi verificado - se não, levar para verificação
         if (user.getEmailVerified() == false) {
             throw new EmailNotVerifiedException(email);
+        }
+
+        //verficar se todos os dados estão completos - se não, impedir acesso
+        if (user.getPhone() == null || user.getPhone().isEmpty() || 
+            user.getCpf() == null || user.getCpf().isEmpty() ||
+            user.getBirthDate() == null) {
+            throw new ProfileIncompleteException(email);
         }
         
         return tokenService.generateToken(user);

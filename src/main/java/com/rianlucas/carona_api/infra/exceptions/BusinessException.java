@@ -1,8 +1,11 @@
 package com.rianlucas.carona_api.infra.exceptions;
 
+import lombok.Getter;
+
 /**
  * Exception base para todas as exceptions personalizadas da aplicação
  */
+@Getter
 public abstract class BusinessException extends RuntimeException {
     
     private final String errorCode;
@@ -16,8 +19,5 @@ public abstract class BusinessException extends RuntimeException {
         super(message, cause);
         this.errorCode = errorCode;
     }
-    
-    public String getErrorCode() {
-        return errorCode;
-    }
+
 }

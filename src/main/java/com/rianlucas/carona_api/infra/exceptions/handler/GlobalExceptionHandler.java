@@ -9,7 +9,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-
 import com.rianlucas.carona_api.domain.response.ErrorResponse;
 import com.rianlucas.carona_api.infra.exceptions.BusinessException;
 import com.rianlucas.carona_api.infra.exceptions.auth.EmailNotVerifiedException;
@@ -18,6 +17,7 @@ import com.rianlucas.carona_api.infra.exceptions.auth.TokenGenerationException;
 import com.rianlucas.carona_api.infra.exceptions.auth.TokenValidationException;
 import com.rianlucas.carona_api.infra.exceptions.user.EmailAlreadyExistsException;
 import com.rianlucas.carona_api.infra.exceptions.user.PhoneAlreadyExistsException;
+import com.rianlucas.carona_api.infra.exceptions.user.ProfileIncompleteException;
 import com.rianlucas.carona_api.infra.exceptions.user.UserNotFoundException;
 import com.rianlucas.carona_api.infra.exceptions.user.UsernameAlreadyExistsException;
 import com.rianlucas.carona_api.infra.exceptions.validation.InvalidDateFormatException;
@@ -142,6 +142,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(ProfileIncompleteException.class)
+    public ResponseEntity<ErrorResponse> handleProfileIncomplete(
+            ProfileIncompleteException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(), 
+            ex.getErrorCode(), 
+            request.getDescription(false).replace("uri=", "")
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
     // ==================== VERIFICATION EXCEPTIONS ====================
 
     @ExceptionHandler(InvalidVerificationCodeException.class)
@@ -235,4 +246,5 @@ public class GlobalExceptionHandler {
         ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
 }
