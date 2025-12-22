@@ -3,17 +3,20 @@ package com.rianlucas.carona_api.controllers;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import com.rianlucas.carona_api.domain.response.ApiResponse;
 import com.rianlucas.carona_api.domain.user.AuthenticationDTO;
 import com.rianlucas.carona_api.domain.user.LoginResponseDTO;
+import com.rianlucas.carona_api.domain.user.RegisterCompletedDTO;
 import com.rianlucas.carona_api.domain.user.RegisterDTO;
-import com.rianlucas.carona_api.domain.user.User;
-import com.rianlucas.carona_api.services.TokenService;
+import com.rianlucas.carona_api.domain.user.RegisterResponseDTO;
 import com.rianlucas.carona_api.services.UserService;
 
 @RestController
@@ -21,33 +24,39 @@ import com.rianlucas.carona_api.services.UserService;
 public class AuthenticationController {
     
     @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
     private UserService userService;
-
-    @Autowired
-    private TokenService tokenService;
     
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody @Validated  AuthenticationDTO authDTO) {
-        var usernamePassword = new UsernamePasswordAuthenticationToken(authDTO.email(), authDTO.password());
-        var auth = this.authenticationManager.authenticate(usernamePassword);
-
-        var token = tokenService.generateToken((User) auth.getPrincipal());
-
-        return ResponseEntity.ok(new LoginResponseDTO(token));
+    public ResponseEntity<?> login(@RequestBody @Validated AuthenticationDTO authDTO) {
+        String token = userService.authenticateUser(authDTO.email(), authDTO.password());
+        return ResponseEntity.ok(new ApiResponse<>(true, "Login realizado com sucesso", new LoginResponseDTO(token)));
     }
 
     @PostMapping("/register")
-    public ResponseEntity register(@RequestBody @Validated RegisterDTO registerDTO) {
-        try {
-            String message = userService.registerUser(registerDTO);
-            return ResponseEntity.ok().body(message);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<?> register(@RequestBody @Validated RegisterDTO registerDTO) {
+        String token = userService.registerUser(registerDTO);
+        
+        RegisterResponseDTO response = new RegisterResponseDTO(
+            "Usuário registrado com sucesso. Código de verificação enviado para o email.",
+            registerDTO.email(),
+            true // emailVerificationRequired
+        );
+        
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(new ApiResponse<>(true, "Email cadastrado com sucesso: " + token, response));
     }
+
+    @PostMapping(value = "/registerComplete/{email}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> completeRegistration( @PathVariable String email, @ModelAttribute @Validated RegisterCompletedDTO registerDTO) {
+        String token = userService.completeUserProfile(email, registerDTO);
+        
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(new ApiResponse<>(true, "Cadastro completo com sucesso", new LoginResponseDTO(token)));
+    }
+
+    
     
     
 }

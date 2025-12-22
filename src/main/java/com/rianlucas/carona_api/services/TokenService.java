@@ -11,6 +11,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.rianlucas.carona_api.domain.user.User;
+import com.rianlucas.carona_api.infra.exceptions.auth.TokenGenerationException;
+import com.rianlucas.carona_api.infra.exceptions.auth.TokenValidationException;
 
 @Service
 public class TokenService {
@@ -23,12 +25,17 @@ public class TokenService {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             String token = JWT.create()
                     .withIssuer("auth-api")
-                    .withSubject(user.getUsername())
+                    .withSubject(user.getUsername()) // Email do usuário
+                    .withClaim("userId", user.getId()) // ID único do usuário
+                    .withClaim("name", user.getName()) // Nome do usuário
+                    .withClaim("role", user.getRole().toString()) // Papel (USER, ADMIN)
+                    .withClaim("emailVerified", user.getEmailVerified() != null ? user.getEmailVerified() : false) // Email verificado?
+                    .withClaim("profileComplete", user.getCpf() != null && user.getCity() != null) // Perfil completo?
                     .withExpiresAt(genExpirantionDate())
                     .sign(algorithm);
             return token;
         } catch (JWTCreationException exception) {
-            throw new RuntimeException("Erro gerar o token :( -> ", exception);
+            throw new TokenGenerationException(exception);
         }
     }
 
@@ -41,7 +48,7 @@ public class TokenService {
                     .verify(token)
                     .getSubject();
         } catch (JWTCreationException exception){
-            throw new RuntimeException("erro ao validar token :( -> ", exception);
+            throw new TokenValidationException(exception);
         }
     }
 

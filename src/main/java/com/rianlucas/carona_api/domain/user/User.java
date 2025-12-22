@@ -46,6 +46,10 @@ public class User implements UserDetails{
     private String gender;
     private String photoUrl;
     private boolean isDriver;
+    private String cpf;
+    private String state;
+    private String city;
+    private Boolean emailVerified = false;
     private AccountStatus accountStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -87,7 +91,7 @@ public class User implements UserDetails{
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return true; // Verificação de email é feita manualmente no UserService
     }
 
     
