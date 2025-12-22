@@ -13,6 +13,8 @@ import com.rianlucas.carona_api.domain.response.ErrorResponse;
 import com.rianlucas.carona_api.infra.exceptions.BusinessException;
 import com.rianlucas.carona_api.infra.exceptions.auth.EmailNotVerifiedException;
 import com.rianlucas.carona_api.infra.exceptions.auth.InvalidCredentialsException;
+import com.rianlucas.carona_api.infra.exceptions.auth.InvalidTokenException;
+import com.rianlucas.carona_api.infra.exceptions.auth.TokenExpiredException;
 import com.rianlucas.carona_api.infra.exceptions.auth.TokenGenerationException;
 import com.rianlucas.carona_api.infra.exceptions.auth.TokenValidationException;
 import com.rianlucas.carona_api.infra.exceptions.user.EmailAlreadyExistsException;
@@ -94,6 +96,28 @@ public class GlobalExceptionHandler {
             request.getDescription(false).replace("uri=", "")
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidToken(
+            InvalidTokenException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(), 
+            ex.getErrorCode(), 
+            request.getDescription(false).replace("uri=", "")
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(TokenExpiredException.class)
+    public ResponseEntity<ErrorResponse> handleTokenExpired(
+            TokenExpiredException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(), 
+            ex.getErrorCode(), 
+            request.getDescription(false).replace("uri=", "")
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     // ==================== USER EXCEPTIONS ====================

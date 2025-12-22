@@ -152,6 +152,11 @@ public class UserService {
     }
 
     public String authenticateUser(String email, String password) {
+
+        if (userRepository.findByEmail(email) == null) {
+            throw new UserNotFoundException(email);
+        }
+        
         // Autentica o usuário
         var usernamePassword = new UsernamePasswordAuthenticationToken(email, password);
         Authentication auth = authenticationManager.authenticate(usernamePassword);
@@ -175,28 +180,5 @@ public class UserService {
         }
         
         return tokenService.generateToken(user);
-    }
-
-    public String forgotMyPassword(String email) {
-        // Verifica se o usuário existe
-        User user = (User) userRepository.findByEmail(email);
-        if (user == null) {
-            throw new UserNotFoundException(email);
-        }
-        // Lógica para resetar a senha (enviar email com link ou código de verificação)
-        return "Funcionalidade de resetar senha ainda não implementada.";
-    }
-
-    public String changeMyPassword(String email, String newPassword) {
-        // Verifica se o usuário existe
-        User user = (User) userRepository.findByEmail(email);
-        if (user == null) {
-            throw new UserNotFoundException(email);
-        }
-        // Atualiza a senha do usuário
-        user.setPassword(passwordEncoder.encode(newPassword));
-        user.setUpdatedAt(LocalDateTime.now());
-        userRepository.save(user);
-        return "Senha alterada com sucesso.";
     }
 }

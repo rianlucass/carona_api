@@ -40,6 +40,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/email-verification/request-code").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email-verification/verify").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email-verification/resend-code").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/password/request-reset").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/password/reset").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
