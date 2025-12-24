@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.rianlucas.carona_api.domain.file.FileType;
 import com.rianlucas.carona_api.domain.user.AccountStatus;
 import com.rianlucas.carona_api.domain.user.RegisterCompletedDTO;
 import com.rianlucas.carona_api.domain.user.RegisterDTO;
@@ -124,7 +125,12 @@ public class UserService {
 
         // Upload da foto (apenas se fornecida)
         if (completedDTO.photo() != null && !completedDTO.photo().isEmpty()) {
-            user.setPhotoUrl(fileStorageService.uploadPhoto(completedDTO.photo()));
+            String photoPath = fileStorageService.uploadPhoto(
+                completedDTO.photo(), 
+                FileType.USER_PROFILE, 
+                user.getId().toString()
+            );
+            user.setPhotoUrl(photoPath);
         }
 
         user.setPhone(completedDTO.phone());

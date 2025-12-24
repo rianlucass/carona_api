@@ -36,6 +36,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/test").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/google").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/registerComplete/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email-verification/request-code").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email-verification/verify").permitAll()
