@@ -11,12 +11,17 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.rianlucas.carona_api.domain.google.AuthResponse;
+import com.rianlucas.carona_api.domain.google.GoogleLoginRequest;
 import com.rianlucas.carona_api.domain.response.ApiResponse;
 import com.rianlucas.carona_api.domain.user.AuthenticationDTO;
 import com.rianlucas.carona_api.domain.user.LoginResponseDTO;
 import com.rianlucas.carona_api.domain.user.RegisterCompletedDTO;
 import com.rianlucas.carona_api.domain.user.RegisterDTO;
 import com.rianlucas.carona_api.domain.user.RegisterResponseDTO;
+import com.rianlucas.carona_api.services.GoogleTokenVerifierService;
 import com.rianlucas.carona_api.services.UserService;
 
 @RestController
@@ -25,6 +30,9 @@ public class AuthenticationController {
     
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private GoogleTokenVerifierService googleService;
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Validated AuthenticationDTO authDTO) {
@@ -56,7 +64,23 @@ public class AuthenticationController {
             .body(new ApiResponse<>(true, "Cadastro completo com sucesso", new LoginResponseDTO(token)));
     }
 
-    
+    @PostMapping("/google")
+    public ResponseEntity<?> googleLogin(@RequestBody @Validated GoogleLoginRequest request) {
+        try {
+            GoogleIdToken.Payload payload = googleService.verifyToken(request.idToken());
+            AuthResponse response = googleService.buildAuthResponse(payload);
+            
+            return ResponseEntity.ok(new ApiResponse<>(true, "Login com Google realizado com sucesso", response));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiResponse<>(false, "Token do Google inválido: " + e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse<>(false, "Erro ao processar login com Google: " + e.getMessage(), null));
+        }
+    }
     
     
 }

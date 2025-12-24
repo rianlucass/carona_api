@@ -9,8 +9,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.rianlucas.carona_api.domain.google.AuthProvider;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,11 +40,18 @@ public class User implements UserDetails{
 
     @Column(unique = true, nullable = false)
     private String email;
+
+    @Column(nullable = true)
     private String password;
     
     @Column(unique = true, nullable = false)
     private String username;
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuthProvider authProvider = AuthProvider.LOCAL;
+    
     private String phone;
     private Date birthDate;
     private String gender;
