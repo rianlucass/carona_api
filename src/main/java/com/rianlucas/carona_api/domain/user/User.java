@@ -61,9 +61,15 @@ public class User implements UserDetails{
     private String state;
     private String city;
     private Boolean emailVerified = false;
+    private LocalDateTime usernameLastEditedAt;
+    
+    @Enumerated(EnumType.STRING)
     private AccountStatus accountStatus;
+    
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    @Enumerated(EnumType.STRING)
     private UserRole role;
 
     public User(String email, String password, UserRole role) {
@@ -81,10 +87,21 @@ public class User implements UserDetails{
         }
     }
 
+    // Getter customizado para o campo username (não confundir com getUsername() do UserDetails)
+    public String getUsernameField() {
+        return username;
+    }
+
+    public void setUsernameField(String username) {
+        this.username = username;
+    }
+
+    // UserDetails retorna email como username para autenticação
     @Override
     public String getUsername() {
         return email;
     }
+    
     @Override
     public boolean isAccountNonExpired() {
         return true;

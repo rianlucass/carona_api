@@ -43,6 +43,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/email-verification/resend-code").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password/request-reset").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password/reset").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
