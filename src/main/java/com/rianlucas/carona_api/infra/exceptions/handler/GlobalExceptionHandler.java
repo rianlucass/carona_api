@@ -22,6 +22,7 @@ import com.rianlucas.carona_api.infra.exceptions.user.PhoneAlreadyExistsExceptio
 import com.rianlucas.carona_api.infra.exceptions.user.ProfileIncompleteException;
 import com.rianlucas.carona_api.infra.exceptions.user.UserNotFoundException;
 import com.rianlucas.carona_api.infra.exceptions.user.UsernameAlreadyExistsException;
+import com.rianlucas.carona_api.infra.exceptions.user.UsernameEditException;
 import com.rianlucas.carona_api.infra.exceptions.validation.InvalidDateFormatException;
 import com.rianlucas.carona_api.infra.exceptions.verification.EmailSendingException;
 import com.rianlucas.carona_api.infra.exceptions.verification.InvalidVerificationCodeException;
@@ -142,6 +143,17 @@ public class GlobalExceptionHandler {
             request.getDescription(false).replace("uri=", "")
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(UsernameEditException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameEdit(
+            UsernameEditException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(), 
+            ex.getErrorCode(), 
+            request.getDescription(false).replace("uri=", "")
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(PhoneAlreadyExistsException.class)

@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.rianlucas.carona_api.domain.file.FileType;
+import com.rianlucas.carona_api.domain.google.AuthProvider;
 import com.rianlucas.carona_api.domain.user.AccountStatus;
 import com.rianlucas.carona_api.domain.user.RegisterCompletedDTO;
 import com.rianlucas.carona_api.domain.user.RegisterDTO;
@@ -69,6 +70,7 @@ public class UserService {
 
         // defino valores padrões se não fornecidos
         newUser.setDriver(false);
+        newUser.setAuthProvider(AuthProvider.LOCAL);
         newUser.setAccountStatus(AccountStatus.ACTIVE);
         newUser.setRole(UserRole.USER);
         newUser.setCreatedAt(LocalDateTime.now());
