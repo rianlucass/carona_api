@@ -11,10 +11,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rianlucas.carona_api.domain.profile.PhoneResponseDTO;
+import com.rianlucas.carona_api.domain.profile.PhoneUpdateDTO;
 import com.rianlucas.carona_api.domain.profile.PhotoResponseDTO;
 import com.rianlucas.carona_api.domain.profile.ProfileResponseDTO;
 import com.rianlucas.carona_api.domain.profile.UsernameResponseDTO;
 import com.rianlucas.carona_api.domain.profile.UsernameUpdateDTO;
+
+import jakarta.validation.Valid;
 import com.rianlucas.carona_api.domain.response.ApiResponse;
 import com.rianlucas.carona_api.domain.user.User;
 import com.rianlucas.carona_api.services.ProfileService;
@@ -61,6 +65,20 @@ public class ProfileController {
             new ApiResponse<>(true, "Nome de usuário atualizado com sucesso", updatedUsername)
         );
     }
+
+    @PutMapping("/phone")
+    public ResponseEntity<ApiResponse<PhoneResponseDTO>> editPhone(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @Valid @RequestBody PhoneUpdateDTO phoneData) {
+            
+        User user = (User) userDetails;
+
+        PhoneResponseDTO updatedPhone = profileService.editPhone(user.getId(), phoneData.phone());
+        return ResponseEntity.ok(
+            new ApiResponse<>(true, "Telefone atualizado com sucesso", updatedPhone)
+        );
+    }
+    
 
 
 }
