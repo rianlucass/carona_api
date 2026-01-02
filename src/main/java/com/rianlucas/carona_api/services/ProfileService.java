@@ -7,14 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.rianlucas.carona_api.domain.profile.PhoneResponseDTO;
 import com.rianlucas.carona_api.domain.profile.PhotoResponseDTO;
 import com.rianlucas.carona_api.domain.profile.PhotoUpdateDTO;
 import com.rianlucas.carona_api.domain.profile.ProfileResponseDTO;
 import com.rianlucas.carona_api.domain.profile.UsernameResponseDTO;
 import com.rianlucas.carona_api.domain.user.User;
 import com.rianlucas.carona_api.infra.config.FileUrlBuilder;
+import com.rianlucas.carona_api.infra.exceptions.user.PhoneAlreadyExistsException;
 import com.rianlucas.carona_api.infra.exceptions.user.UserNotFoundException;
 import com.rianlucas.carona_api.infra.exceptions.user.UsernameEditException;
+import com.rianlucas.carona_api.infra.exceptions.validation.InvalidPhoneException;
 import com.rianlucas.carona_api.repositories.UserRepository;
 
 @Service
@@ -77,8 +80,7 @@ public class ProfileService {
     private static final Duration USERNAME_EDIT_INTERVAL = Duration.ofDays(60);
 
     public UsernameResponseDTO editUsername(String userId, String newUsername) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         // Verifica se o novo username já está em uso por outro usuário
         if (userRepository.existsByUsername(newUsername) && !user.getUsernameField().equals(newUsername)) {
@@ -110,5 +112,29 @@ public class ProfileService {
         userRepository.save(user);
 
         return new UsernameResponseDTO(newUsername);
+    }
+
+    @Transactional
+    public PhoneResponseDTO editPhone(String userId, String newPhone) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+
+        // Validar se o telefone não é null ou vazio
+        if (newPhone == null || newPhone.trim().isEmpty()) {
+            throw new InvalidPhoneException("O telefone não pode estar vazio");
+        }
+
+        // Normalizar o telefone (remover espaços, parênteses e hífens)
+        String normalizedPhone = newPhone.replaceAll("[\\s\\(\\)\\-]", "");
+
+        // Verifica se o novo telefone já está em uso por outro usuário ou se já é o mesmo
+        if (userRepository.existsByPhone(newPhone) && !user.getPhone().equals(newPhone)) {
+            throw new PhoneAlreadyExistsException(newPhone);
+        }
+
+        user.setPhone(newPhone);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+        
+        return new PhoneResponseDTO(newPhone);
     }
 }

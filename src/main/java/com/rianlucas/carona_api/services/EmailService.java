@@ -14,7 +14,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    private String link = "exp://192.168.1.105:8081/--/auth/reset-password?token=";
+    private String link = "${app.base.url.prod}/auth/reset-password?token=";
 
     public void sendVerificationCode(String toEmail, String verificationCode) {
         SimpleMailMessage message = new SimpleMailMessage();

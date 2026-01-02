@@ -69,7 +69,6 @@ public class UserService {
         
 
         // defino valores padrões se não fornecidos
-        newUser.setDriver(false);
         newUser.setAuthProvider(AuthProvider.LOCAL);
         newUser.setAccountStatus(AccountStatus.ACTIVE);
         newUser.setRole(UserRole.USER);

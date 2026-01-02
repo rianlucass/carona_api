@@ -56,11 +56,12 @@ public class User implements UserDetails{
     private Date birthDate;
     private String gender;
     private String photoUrl;
-    private boolean isDriver;
+    private boolean isDriver = false;
     private String cpf;
     private String state;
     private String city;
     private Boolean emailVerified = false;
+    private Boolean phoneVerified = false;
     private LocalDateTime usernameLastEditedAt;
     
     @Enumerated(EnumType.STRING)
